@@ -1,11 +1,11 @@
-package main
+package fcg
 
 import "fmt"
 
 // MULT - multiplication operator for Edges
 const MULT = 1
 
-// ADD - addition operator for Edges 
+// ADD - addition operator for Edges
 const ADD = 2
 
 // EQUAL - equal operator for Edges
@@ -16,11 +16,11 @@ const NOOP = 0
 
 // EMPTY - zero value for Node value
 // we compute values later unless it's a constant
-const EMPTY_VALUE = 0 
+const EMPTY_VALUE = 0
 
 // Builder contains our graph and a counter
 type Builder struct {
-	graph []*Node
+	graph   []*Node
 	counter int
 }
 
@@ -36,9 +36,9 @@ type Edge struct {
 // Uses simple integer keys
 // The value is filled in by the FillNodes method
 type Node struct {
-	key      int
-	value    uint64
-	adjacent Edge
+	key     int
+	value   uint64
+	parents Edge
 }
 
 // newBuilder creates a new Builder
@@ -52,26 +52,26 @@ func NewBuilder() *Builder {
 // Increments the builder counter on succesful node creation
 // Returns the key of the newly created node or an error
 func (b *Builder) AddNode(v uint64) *Node {
-  var k int
-  if len(b.graph) > 0 {
-    k = len(b.graph) 
-  }
-	n := &Node{
-		key:      k,
-    value: v,
+	var k int
+	if len(b.graph) > 0 {
+		k = len(b.graph)
 	}
-  b.graph = append(b.graph, n)
-	return n 
+	n := &Node{
+		key:   k,
+		value: v,
+	}
+	b.graph = append(b.graph, n)
+	return n
 }
 
 // addEdge creates edges
 // edge direction is dependent on argument order
-// method doesn't implement any sorting function 
+// method doesn't implement any sorting function
 func (b *Builder) addEdge(c, d Node, operator int) Edge {
-  return Edge{
-    keys: []int{c.key, d.key},
-    operator: operator,
-  } 
+	return Edge{
+		keys:     []int{c.key, d.key},
+		operator: operator,
+	}
 }
 
 // Init initializes a node in the graph
@@ -80,76 +80,71 @@ func (b *Builder) Init(v uint64) *Node {
 }
 
 // Constant initializes a node in a graph, set to a constant value
-func (b *Builder) Constant(value uint64) *Node {
-	return b.AddNode(value)
+func (b *Builder) Constant(v uint64) *Node {
+	return b.AddNode(v)
 }
 
 // Add adds 2 nodes in the graph, returning a new node
-func (b *Builder) Add(c, d Node) *Node {	
-  n := b.AddNode(EMPTY_VALUE)
-  n.adjacent = b.addEdge(c, d, ADD)
-  return n
+func (b *Builder) Add(c, d Node) *Node {
+	n := b.AddNode(EMPTY_VALUE)
+	n.parents = b.addEdge(c, d, ADD)
+	return n
 }
 
 // Mul multiplies 2 nodes in the graph, returning a new node
 func (b *Builder) Mult(c, d Node) *Node {
-  n := b.AddNode(EMPTY_VALUE)
-  n.adjacent = b.addEdge(c, d, MULT)
-  return n
+	n := b.AddNode(EMPTY_VALUE)
+	n.parents = b.addEdge(c, d, MULT)
+	return n
 }
 
 // AssertEqual asserts that 2 nodes are equal
 func (b *Builder) AssertEqual(c, d Node) bool {
-	return true
+	return c.value == d.value
 }
 
-// TODO: need a method to pass input node values
+// FillNodes fill in all node values in our graph
 func (b *Builder) FillNodes() error {
-  g := b.graph
-  for _, n := range(g) {
-    a := n.adjacent
-    kLen := len(a.keys)
-    if kLen > 0 {
-      if kLen > 2 {
-        return fmt.Errorf("node edge count must not exceed 2. Actual: %d", kLen)
-      }
-      e1 := g[a.keys[0]]
-      e2 := g[a.keys[1]]
-      switch {
-      case a.operator == MULT:
-        n.value = e1.value * e2.value
-      case a.operator == ADD:
-        n.value = e1.value + e2.value
-      } 
-    } 
-  }
-  for i, _ := range(g) {
-    fmt.Printf("n: %v\n", g[i])
-  }
+	g := b.graph
+	for _, n := range g {
+		p := n.parents
+		kLen := len(p.keys)
+		if kLen > 0 {
+			if kLen > 2 {
+				return fmt.Errorf("node edge count must not exceed 2. Actual: %d", kLen)
+			}
+			e1 := g[p.keys[0]]
+			e2 := g[p.keys[1]]
+			switch {
+			case p.operator == MULT:
+				n.value = e1.value * e2.value
+			case p.operator == ADD:
+				n.value = e1.value + e2.value
+			}
+		}
+	}
+	for i, _ := range g {
+		fmt.Printf("n: %v\n", g[i])
+	}
 	return nil
+}
+
+// ViewGraph prints the graph to console
+func (b *Builder) ViewGraph() error {
+	g := b.graph
+	for i, _ := range g {
+		fmt.Printf("n: %v\n", g[i])
+	}
+	return nil
+}
+
+func (n *Node) Get() uint64 {
+	return n.value
 }
 
 // Given a graph that has `fill_nodes` already called on it
 // checks that all the constraints hold
+// @TODO
 func (b *Builder) CheckConstraints() bool {
 	return false
-}
-
-// incrementcounter increases the Builder counter
-func (b *Builder) incrementCounter() {
-  b.counter = b.counter + 1
-}
-
-func main() {
-	// f(x) = x^2 + x + 5 would be defined by the following code:
-	builder := NewBuilder()
-	x := builder.Init(2)
-	xSquared := builder.Mult(*x, *x)
-	five := builder.Constant(5)
-	xSquaredPlus5 := builder.Add(*xSquared, *five)
-	y := builder.Add(*xSquaredPlus5, *x)
-
-	builder.FillNodes()
-	builder.CheckConstraints()
-  fmt.Printf("result = %v", y.value)
 }
