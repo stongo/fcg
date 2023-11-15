@@ -20,15 +20,14 @@ const EMPTY_VALUE = 0
 
 // Builder contains our graph and a counter
 type Builder struct {
-	graph   []*Node
-	counter int
+	graph []*Node
 }
 
 // Edge defines the edges between vertices in our graph
 // The operator should only be set with constants ADD and MULT
 // keys should only be pairs
 type Edge struct {
-	keys     []int
+	keys     []uint
 	operator int
 }
 
@@ -36,7 +35,7 @@ type Edge struct {
 // Uses simple integer keys
 // The value is filled in by the FillNodes method
 type Node struct {
-	key     int
+	key     uint
 	value   uint64
 	parents Edge
 }
@@ -52,9 +51,9 @@ func NewBuilder() *Builder {
 // Increments the builder counter on succesful node creation
 // Returns the key of the newly created node or an error
 func (b *Builder) AddNode(v uint64) *Node {
-	var k int
+	var k uint
 	if len(b.graph) > 0 {
-		k = len(b.graph)
+		k = uint(len(b.graph))
 	}
 	n := &Node{
 		key:   k,
@@ -69,7 +68,7 @@ func (b *Builder) AddNode(v uint64) *Node {
 // method doesn't implement any sorting function
 func (b *Builder) addEdge(c, d Node, operator int) Edge {
 	return Edge{
-		keys:     []int{c.key, d.key},
+		keys:     []uint{c.key, d.key},
 		operator: operator,
 	}
 }
@@ -122,9 +121,6 @@ func (b *Builder) FillNodes() error {
 				n.value = e1.value + e2.value
 			}
 		}
-	}
-	for i, _ := range g {
-		fmt.Printf("n: %v\n", g[i])
 	}
 	return nil
 }
