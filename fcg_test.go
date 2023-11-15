@@ -54,11 +54,11 @@ func TestBuilderAddEdge(t *testing.T) {
 	var v uint64
 	expect := make(map[string]Edge)
 	expect["edge0"] = Edge{
-		keys:     []int{0, 1},
+		keys:     []uint{0, 1},
 		operator: ADD,
 	}
 	expect["edge1"] = Edge{
-		keys:     []int{1, 2},
+		keys:     []uint{1, 2},
 		operator: MULT,
 	}
 	actual := make(map[string]Edge)
@@ -104,7 +104,7 @@ func TestBuilderAdd(t *testing.T) {
 	node0 := b.AddNode(v)
 	node1 := b.AddNode(v)
 	expect := Edge{
-		keys:     []int{node0.key, node1.key},
+		keys:     []uint{node0.key, node1.key},
 		operator: ADD,
 	}
 	actual := b.Add(*node0, *node1)
@@ -124,7 +124,7 @@ func TestBuilderMult(t *testing.T) {
 	node0 := b.AddNode(v)
 	node1 := b.AddNode(v)
 	expect := Edge{
-		keys:     []int{node0.key, node1.key},
+		keys:     []uint{node0.key, node1.key},
 		operator: MULT,
 	}
 	actual := b.Mult(*node0, *node1)
