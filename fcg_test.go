@@ -183,3 +183,15 @@ func TestNodeGet(t *testing.T) {
 		t.Error(errorMsg("problem with Get", actual, expect))
 	}
 }
+
+func TestNodeSet(t *testing.T) {
+	b := NewBuilder()
+	var v uint64
+	n := b.AddNode(v)
+	n.Set(8)
+	expect := uint64(8)
+	actual := n.Get()
+	if actual != expect {
+		t.Error(errorMsg("problem with Set", actual, expect))
+	}
+}
