@@ -99,7 +99,7 @@ func (b *Builder) Mult(c, d Node) *Node {
 
 // AssertEqual asserts that 2 nodes are equal
 func (b *Builder) AssertEqual(c, d Node) bool {
-	return c.value == d.value
+	return c.Get() == d.Get()
 }
 
 // FillNodes fill in all node values in our graph
@@ -116,9 +116,9 @@ func (b *Builder) FillNodes() error {
 			e2 := g[p.keys[1]]
 			switch {
 			case p.operator == MULT:
-				n.value = e1.value * e2.value
+				n.Set(e1.Get() * e2.Get())
 			case p.operator == ADD:
-				n.value = e1.value + e2.value
+				n.Set(e1.Get() + e2.Get())
 			}
 		}
 	}
@@ -132,6 +132,10 @@ func (b *Builder) ViewGraph() error {
 		fmt.Printf("n: %v\n", g[i])
 	}
 	return nil
+}
+
+func (n *Node) Set(v uint64) {
+	n.value = v
 }
 
 func (n *Node) Get() uint64 {
